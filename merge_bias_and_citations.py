@@ -20,12 +20,15 @@ citation_tld_with_features = sqlContext.read.parquet(CITATION_TLD_WITH_FEATURES)
 
 ## Rename since we have 2 TLD columns
 bias_score_with_tld = bias_score_with_tld.select(
-    col("tld").alias("retrieved_tld"), col("political_bias").alias("bias_score")
+    col("tld").alias("retrieved_tld"), 
+    col("political_bias").alias("bias_score"),
+    col("sub_dom").alias("sub_dom")
 )
 
 filtered = citation_tld_with_features.join(
     bias_score_with_tld,
-    bias_score_with_tld.retrieved_tld == citation_tld_with_features.tld,
+    ((bias_score_with_tld.retrieved_tld == citation_tld_with_features.tld)
+    & (bias_score_with_tld.sub_dom == citation_tld_with_features.sub_domain))
     how='inner'
 )
 

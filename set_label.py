@@ -31,13 +31,13 @@ citations_bias_features = citations_bias_features.withColumn(
 ## citations_bias_features.groupby(citations_bias_features['label']).count()
 ## Since the count of conservative is less, we take 220000 of each so that we have
 ## an equal dataset in terms of the class and not an imbalance
-# +-----+-------+                                                                 
-# |label|  count|
-# +-----+-------+
-# | MODR|3800812|
-# | CONS| 220070|
-# | LIBR|3841186|
-# +-----+-------+
+# +-----+------+                                                                  
+# |label| count|
+# +-----+------+
+# | MODR|226460|
+# | CONS|  7380|
+# | LIBR|700267|
+# +-----+------+
 
 ## Sample 220000 citations, sampling ratio calculate by 220,000/size
 cons_citations = citations_bias_features.filter(

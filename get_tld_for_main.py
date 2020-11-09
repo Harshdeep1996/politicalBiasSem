@@ -1,7 +1,5 @@
 ## Command to run on Cluster:
-## PYSPARK_PYTHON=/home/harshdee/mypython/bin/python spark-submit 
-## --master yarn --driver-memory 32G --num-executors 20 --executor-memory 16G 
-## --executor-cores 6 --py-files ./dependencies.zip get_tld_for_main.py
+## PYSPARK_PYTHON=/home/harshdee/mypython/bin/python spark-submit  --master yarn --driver-memory 32G --num-executors 20 --executor-memory 16G --executor-cores 6 --py-files ./dependencies.zip get_tld_for_main.py
 
 import glob
 import tldextract
@@ -28,11 +26,37 @@ def get_top_domain(citation_url):
    ext = tldextract.extract(citation_url)
    return ext.domain.lower()
 
+def get_sub_domain(citation_url):
+    ext = tldextract.extract(citation_url)
+    if not ext.domain:
+        return ''
+
+    if ext.subdomain:
+        subdomain = ext.subdomain.lower()
+        if subdomain == 'www':
+            return get_suffixes(ext, citation_url)
+        else:
+            return subdomain
+    else:
+        return get_suffixes(ext, citation_url)
+
+def get_suffixes(ext, citation_url):
+    main_part = '.'.join(part for part in ext if part).encode('utf-8')
+    citation_url = citation_url.encode('utf-8')
+    suffixes = citation_url.split(main_part)[1].split('/')
+    if len(suffixes) >= 2:
+        return suffixes[1]
+    else:
+        return ''
+
 ## Get the dataset and extract TLDs for the URLs and get the necessary columns
 topdomain_udf = udf(get_top_domain)
+subdomain_udf = udf(get_sub_domain)
+suffixes = udf(get_suffixes)
 citations_separated = citations_separated.withColumn('tld', topdomain_udf('URL'))
+citations_separated = citations_separated.withColumn('sub_domain', subdomain_udf('URL'))
 citations_separated = citations_separated.select([
-    'URL', 'tld', 'citations', 'Title',
+    'URL', 'tld', 'citations', 'Title', 'sub_domain',
     'sections', 'type_of_citation', 'ID_list', 'id', 'r_id', 'r_parentid'])
 
 citations_separated.write.mode('overwrite').parquet(OUTPUT_DATA)

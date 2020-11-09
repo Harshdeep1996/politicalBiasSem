@@ -1,6 +1,5 @@
 ## Command to run on Cluster:
-## spark-submit --master yarn --driver-memory 32G --num-executors 20 --executor-memory 16G 
-## --executor-cores 6 get_features_for_citations_with_tld.py
+## spark-submit --master yarn --driver-memory 32G --num-executors 20 --executor-memory 16G --executor-cores 6 get_features_for_citations_with_tld.py
 
 from pyspark.sql.functions import col
 from pyspark import SparkContext, SQLContext
