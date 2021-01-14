@@ -1,5 +1,5 @@
-## Extension of Citations Semester: using bias and reliability
-Project around trying to map the citations in the Citations Dataset by extracting the domain names with the following:
+## Extension of Citations dataset: using bias and reliability 
+Preliminary work around trying to map the citations in the Citations Dataset by extracting the domain names with the following:
 
 1. To get bias score: map it with Media Monitor (https://homepages.dcc.ufmg.br/~lucaslima/pdf/ribeiro2018media.pdf) Dataset
 2. To get reliability label: map it with Media Bias Fact Check (https://mediabiasfactcheck.com/) dataset 
