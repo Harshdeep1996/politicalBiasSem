@@ -6,7 +6,7 @@ from pyspark import SparkContext, SQLContext
 
 
 INPUT_BASE_FEATURES = 'hdfs:///user/harshdee/base_features.parquet'
-CITATIONS_WITH_TLD  = 'hdfs:///user/harshdee/citations_with_tld.parquet'
+CITATIONS_WITH_TLD  = 'hdfs:///user/harshdee/citations_url_archive.parquet'
 
 OUTPUT_DATA = 'hdfs:///user/harshdee/citations_tld_with_features.parquet'
 

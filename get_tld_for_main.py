@@ -2,6 +2,7 @@
 ## PYSPARK_PYTHON=/home/harshdee/mypython/bin/python spark-submit  --master yarn --driver-memory 32G --num-executors 20 --executor-memory 16G --executor-cores 6 --py-files ./dependencies.zip get_tld_for_main.py
 
 import glob
+import json
 import tldextract
 
 from pyspark.sql import Row
@@ -11,7 +12,9 @@ from pyspark.sql.types import ArrayType, StringType
 
 
 INPUT_DATA = 'hdfs:///user/harshdee/dataset.parquet'
-OUTPUT_DATA = 'hdfs:///user/harshdee/citations_with_tld.parquet'
+OUTPUT_DATA = 'hdfs:///user/harshdee/citations_url_archive.parquet'
+f = open('archive_mapping.json')
+archive_mapping = json.load(f)
 
 sc = SparkContext()
 sqlContext = SQLContext(sc)
@@ -49,10 +52,36 @@ def get_suffixes(ext, citation_url):
     else:
         return ''
 
+def get_url_web_archive(citation_url):
+    ## do 7 splits and take the last one
+    if 'web.archive.org/' in citation_url: ## 36495
+        return citation_url.split('/', 5)[-1]
+    return citation_url
+
+def get_url_archive_is(citation_url): ## 1689
+    if (not (('archive.is/' in citation_url) or ('archive.li/' in citation_url))):
+        return citation_url
+    last_split = citation_url.split('/', 5)[-1]
+    if len(last_split) != 5:
+        return last_split
+    else:
+        return archive_mapping[citation_url]
+
 ## Get the dataset and extract TLDs for the URLs and get the necessary columns
 topdomain_udf = udf(get_top_domain)
 subdomain_udf = udf(get_sub_domain)
 suffixes = udf(get_suffixes)
+url_web_archive = udf(get_url_web_archive)
+url_archive_is = udf(get_url_archive_is)
+
+## look for webarchive expressions in the URL
+## searchfor = ['archive.is/', 'archive.li/']
+## citations_separated[citations_separated['URL'].rlike('|'.join(searchfor))]
+
+## Get main URL from archive URLs and update the URL columns
+citations_separated = citations_separated.withColumn('URL', url_archive_is('URL'))
+citations_separated = citations_separated.withColumn('URL', url_web_archive('URL'))
+
 citations_separated = citations_separated.withColumn('tld', topdomain_udf('URL'))
 citations_separated = citations_separated.withColumn('sub_domain', subdomain_udf('URL'))
 citations_separated = citations_separated.select([
